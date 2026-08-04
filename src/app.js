@@ -1,24 +1,20 @@
 const express = require("express");
-const {z} = require("zod");
-
 const app = express();
-
 app.use(express.json());
+const validateMobileAndEmail = require('./userValidation.js');
 
 
-function validateMobileAndEmail(req,res,next){
-    
-    const userSchema = z.object({
-        name : z.string().max(10),
-        age : z.number().min(18),
-        email : z.string().email();
+
+app.get('/serverStatus', (req,res) => {
+    res.status(200).json({
+        "msg" : "Engpoints are working"
     })
-}
-
-
-
-app.get('/login', (req,res,validateMobileAndEmail) => {
-    const userData = req.body; //expected is name, age, email, mobile
-    
+})
+app.post('/signUp', validateMobileAndEmail, (req,res) => {
 
 });
+
+
+
+
+module.exports = app;

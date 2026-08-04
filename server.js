@@ -1,11 +1,13 @@
-const app = require('')
-
+const app = require('./src/app');
+const port = 3000;
 
 const serverStart = function () {
-    return app.listen(3000, () => {
-        console.log("Server is up and listening : )");
+    return app.listen(port, () => {
+        console.log(`Server is up at ${port} and listening : )`);
     })
 }
 
+
+serverStart();
 module.exports = serverStart;
 
