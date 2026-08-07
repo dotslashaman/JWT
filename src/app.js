@@ -35,7 +35,7 @@ app.post('/signUp', validateMobileAndEmail, (req,res) => {
 
 
 app.post('/logIn', validateMobileAndEmail, (req,res) => {
-
+    
 })
 
 
