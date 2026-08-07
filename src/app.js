@@ -1,10 +1,20 @@
 require('dotenv').config();
+const mongoose = require("mongoose");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const app = express();
 app.use(express.json());
 const validateMobileAndEmail = require('./userValidation.js');
+const { errors } = require('playwright');
 const users = [];
+
+const mongourl = process.env.mongoUrl;
+
+mongoose.connect(mongourl)
+.then(console.log("Connected to database"))
+.catch((error) => {
+    console.log(error);
+});
 
 app.get('/serverStatus', (req,res) => {
     res.status(200).json({
