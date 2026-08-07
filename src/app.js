@@ -40,15 +40,17 @@ const jwtSecret = process.env.JWT_SECRET;
 app.post('/signUp', validateMobileAndEmail, async (req,res) => {
 
     const id = req.body.mobileNumber;
-    const checkUser = users.some(user => user.mobileNumber == req.body.mobileNumber);
+    console.log("id is", id);
 
-    if(checkUser){
+    const checkExisting = await dbUser.findOne({mobileNumber : id});
+
+    if(checkExisting){
         return res.status(400).json({
             "msg" : "Error : User with same mobile already present"
         });
     }
 
-    users.push(req.body);
+  
     const tempUser = await new dbUser(req.body);
     await tempUser.save();
     console.log(req.body);
