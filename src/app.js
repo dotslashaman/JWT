@@ -2,13 +2,13 @@ require('dotenv').config();
 const mongoose = require("mongoose");
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const app = express();
 app.use(express.json());
-const validateMobileAndEmail = require('./userValidation.js');
-const { errors } = require('playwright');
-const users = [];
+const { validateMobileAndEmail, validateLogin } = require('./userValidation.js');
 
 const mongourl = process.env.mongoUrl;
+const SALT_ROUNDS = 10;
 
 mongoose.connect(mongourl)
 .then(() => {
@@ -37,7 +37,16 @@ app.get('/serverStatus', (req,res) => {
 
 const jwtSecret = process.env.JWT_SECRET;
 
-app.post('/signUp', validateMobileAndEmail, async (req,res) => {
+const requireDbConnection = (req,res,next) => {
+    if(mongoose.connection.readyState !== 1){
+        return res.status(503).json({
+            "msg" : "Database unavailable, please try again later"
+        });
+    }
+    next();
+};
+
+app.post('/signUp', requireDbConnection, validateMobileAndEmail, async (req,res) => {
 
     const id = req.body.mobileNumber;
     console.log("id is", id);
@@ -50,22 +59,21 @@ app.post('/signUp', validateMobileAndEmail, async (req,res) => {
         });
     }
 
-  
-    const tempUser = await new dbUser(req.body);
+    const hashedPassword = await bcrypt.hash(req.body.password, SALT_ROUNDS);
+    const tempUser = new dbUser({...req.body, password : hashedPassword});
     await tempUser.save();
-    console.log(req.body);
     res.status(201).json({
         "msg" : "User created successfully"
     });
-    
+
 });
 
-app.post('/logIn', async (req,res) => {
+app.post('/logIn', requireDbConnection, validateLogin, async (req,res) => {
     const mobileNumber = req.body.mobileNumber;
     const password = req.body.password;
-    
-    const checkExisting = await dbUser.findOne({mobileNumber,password});
-    if(!checkExisting){
+
+    const checkExisting = await dbUser.findOne({mobileNumber});
+    if(!checkExisting || !(await bcrypt.compare(password, checkExisting.password))){
         return res.status(400).json({
             "msg" : "Invalid credentials, user not found"
         });

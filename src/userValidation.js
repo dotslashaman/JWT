@@ -42,5 +42,27 @@ function validateMobileAndEmail(req,res,next){
     }
 }
 
+function validateLogin(req,res,next){
 
-module.exports = validateMobileAndEmail;
+    const loginSchema = z.object({
+        mobileNumber : z.string().length(10, {
+            message : "Mobile Number Should Be 10 Digits"
+        }),
+        password : z.string().min(1, {
+            message : "Password is required"
+        }),
+    });
+
+    const result = loginSchema.safeParse(req.body);
+    if(!result.success) {
+       return res.status(400).json({
+        "msg" : "Login Validation Failed",
+        "details" : result.error.format()
+       })
+    }else{
+        next();
+    }
+}
+
+
+module.exports = { validateMobileAndEmail, validateLogin };
