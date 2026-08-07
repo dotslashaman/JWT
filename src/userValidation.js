@@ -23,7 +23,6 @@ function validateMobileAndEmail(req,res,next){
     });
 
     const result = userSchema.safeParse(req.body);
-    console.log(result);
     if(!result.success) {
        return res.status(400).json({
         "msg" : "User Validation Failed",
