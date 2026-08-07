@@ -60,18 +60,19 @@ app.post('/signUp', validateMobileAndEmail, async (req,res) => {
     
 });
 
-app.post('/logIn', (req,res) => {
+app.post('/logIn', async (req,res) => {
     const mobileNumber = req.body.mobileNumber;
     const password = req.body.password;
-    const userFind = users.find(u => u.mobileNumber == mobileNumber && u.password == password);
-    if(!userFind){
+    
+    const checkExisting = await dbUser.findOne({mobileNumber,password});
+    if(!checkExisting){
         return res.status(400).json({
             "msg" : "Invalid credentials, user not found"
         });
     }
 
     const token = jwt.sign(
-        {mobileNumber : userFind.mobileNumber},
+        {mobileNumber : checkExisting.mobileNumber},
         jwtSecret,
         {expiresIn : '1h'}
     )
